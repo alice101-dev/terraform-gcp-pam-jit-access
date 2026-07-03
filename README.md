@@ -1,5 +1,7 @@
 # Terraform — GCP Privileged Access Manager (PAM)
 
+[![CI](https://github.com/alice101-dev/terraform-gcp-pam-jit-access/actions/workflows/ci.yml/badge.svg)](https://github.com/alice101-dev/terraform-gcp-pam-jit-access/actions/workflows/ci.yml)
+
 Just-in-time (JIT) temporary privilege elevation for select principals on GCP,
 plus the audit-logging setup to review every elevation. Built with
 [GCP Privileged Access Manager](https://cloud.google.com/iam/docs/pam-overview).
@@ -31,6 +33,9 @@ Plus:
 
 ```
 .
+├── .github/
+│   └── workflows/
+│       └── ci.yml            # fmt + validate + Checkov on every push/PR
 ├── modules/
 │   └── pam-entitlement/      # reusable entitlement wrapper
 │       ├── main.tf
@@ -105,6 +110,20 @@ gcloud logging read \
   'protoPayload.serviceName="privilegedaccessmanager.googleapis.com"' \
   --project my-production-project --limit 50
 ```
+
+## Testing & security scanning
+
+Every push and pull request runs through [GitHub Actions](.github/workflows/ci.yml):
+
+```bash
+terraform fmt -check -recursive          # formatting
+terraform init -backend=false && terraform validate   # schema validation (in resources/)
+checkov -d . --framework terraform       # static security analysis
+```
+
+Checkov currently reports **0 failed checks** — including the project-level IAM
+policies (no basic roles, no service-account impersonation roles, no default
+service accounts).
 
 ## Production notes
 
